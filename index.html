@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FingerConnect — Bridging Communication Through Sign Language</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #fdf8f0;
+    --warm-white: #fffef9;
+    --ink: #1a1208;
+    --brown: #5c3d1e;
+    --amber: #d97b2a;
+    --amber-light: #f5a84e;
+    --amber-pale: #fdecc8;
+    --sage: #6b8f71;
+    --rust: #c0492b;
+    --card-bg: #fffdf7;
+    --shadow: rgba(92,61,30,0.12);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Texture overlay ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── HERO ── */
+  header {
+    position: relative;
+    padding: 80px 40px 64px;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .header-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.18;
+  }
+  .blob-1 { width: 500px; height: 500px; background: var(--amber); top: -200px; left: -100px; }
+  .blob-2 { width: 400px; height: 400px; background: var(--sage); top: -100px; right: -80px; }
+  .blob-3 { width: 300px; height: 300px; background: var(--rust); bottom: -100px; left: 50%; transform: translateX(-50%); }
+
+  .badge {
+    display: inline-block;
+    background: var(--amber-pale);
+    color: var(--brown);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 999px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(217,123,42,0.25);
+    animation: fadeUp 0.6s ease both;
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(3rem, 7vw, 5.5rem);
+    line-height: 1.05;
+    color: var(--ink);
+    animation: fadeUp 0.7s 0.1s ease both;
+    position: relative;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--amber);
+  }
+
+  .subtitle {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    color: var(--brown);
+    font-weight: 300;
+    margin-top: 14px;
+    letter-spacing: 0.01em;
+    animation: fadeUp 0.7s 0.2s ease both;
+  }
+
+  .intro {
+    max-width: 620px;
+    margin: 32px auto 0;
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: #4a3520;
+    font-weight: 400;
+    animation: fadeUp 0.7s 0.3s ease both;
+  }
+
+  .divider {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--amber), var(--amber-light));
+    border-radius: 4px;
+    margin: 40px auto 0;
+    animation: fadeUp 0.7s 0.4s ease both;
+  }
+
+  /* ── SECTION ── */
+  .section {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 56px 32px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .section-label {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 10px;
+  }
+
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    text-align: center;
+    color: var(--ink);
+    margin-bottom: 48px;
+  }
+
+  /* ── ALPHABET GRID ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid rgba(217,123,42,0.15);
+    box-shadow: 0 2px 12px var(--shadow);
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.22s cubic-bezier(.34,1.56,.64,1), box-shadow 0.22s ease;
+    animation: cardIn 0.5s both;
+  }
+
+  .card:hover {
+    transform: translateY(-6px) scale(1.04);
+    box-shadow: 0 12px 32px rgba(92,61,30,0.18);
+  }
+
+  .card:hover .hand-svg { opacity: 0.08; transform: scale(1.1); }
+  .card:hover .letter-reveal { opacity: 1; transform: translateY(0); }
+  .card:hover .letter-small { opacity: 0; }
+
+  .hand-svg {
+    width: 72%;
+    height: 72%;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+
+  .letter-small {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1rem;
+    color: var(--brown);
+    margin-top: 6px;
+    font-weight: 400;
+    transition: opacity 0.2s ease;
+    position: absolute;
+    bottom: 10px;
+  }
+
+  .letter-reveal {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    pointer-events: none;
+  }
+
+  .letter-big {
+    font-family: 'DM Serif Display', serif;
+    font-size: 3.2rem;
+    color: var(--amber);
+    line-height: 1;
+    font-style: italic;
+  }
+
+  .letter-name {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--brown);
+    margin-top: 4px;
+  }
+
+  /* Stagger cards */
+  .card:nth-child(1)  { animation-delay: 0.05s }
+  .card:nth-child(2)  { animation-delay: 0.08s }
+  .card:nth-child(3)  { animation-delay: 0.11s }
+  .card:nth-child(4)  { animation-delay: 0.14s }
+  .card:nth-child(5)  { animation-delay: 0.17s }
+  .card:nth-child(6)  { animation-delay: 0.20s }
+  .card:nth-child(7)  { animation-delay: 0.23s }
+  .card:nth-child(8)  { animation-delay: 0.26s }
+  .card:nth-child(9)  { animation-delay: 0.29s }
+  .card:nth-child(10) { animation-delay: 0.32s }
+  .card:nth-child(11) { animation-delay: 0.35s }
+  .card:nth-child(12) { animation-delay: 0.38s }
+  .card:nth-child(13) { animation-delay: 0.41s }
+  .card:nth-child(14) { animation-delay: 0.44s }
+  .card:nth-child(15) { animation-delay: 0.47s }
+  .card:nth-child(16) { animation-delay: 0.50s }
+  .card:nth-child(17) { animation-delay: 0.53s }
+  .card:nth-child(18) { animation-delay: 0.56s }
+  .card:nth-child(19) { animation-delay: 0.59s }
+  .card:nth-child(20) { animation-delay: 0.62s }
+  .card:nth-child(21) { animation-delay: 0.65s }
+  .card:nth-child(22) { animation-delay: 0.68s }
+  .card:nth-child(23) { animation-delay: 0.71s }
+  .card:nth-child(24) { animation-delay: 0.74s }
+  .card:nth-child(25) { animation-delay: 0.77s }
+  .card:nth-child(26) { animation-delay: 0.80s }
+
+  /* ── TIP STRIP ── */
+  .tip-strip {
+    background: var(--amber-pale);
+    border: 1px solid rgba(217,123,42,0.3);
+    border-radius: 16px;
+    padding: 28px 36px;
+    margin-top: 56px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .tip-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+  }
+
+  .tip-text { flex: 1; min-width: 200px; }
+
+  .tip-text strong {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--brown);
+    margin-bottom: 4px;
+  }
+
+  .tip-text p {
+    font-size: 0.9rem;
+    color: #7a5030;
+    line-height: 1.6;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 0.8rem;
+    color: #a08060;
+    border-top: 1px solid rgba(217,123,42,0.12);
+  }
+
+  footer span { color: var(--amber); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    header { padding: 60px 24px 48px; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; }
+    .section { padding: 40px 20px 60px; }
+  }
+
+  /* Accessibility: focus styles */
+  .card:focus-visible {
+    outline: 3px solid var(--amber);
+    outline-offset: 3px;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-blob blob-1"></div>
+  <div class="header-blob blob-2"></div>
+  <div class="header-blob blob-3"></div>
+  <div class="badge">✦ Free Learning Resource</div>
+  <h1>Finger<em>Connect</em></h1>
+  <p class="subtitle">Bridging Communication Through Sign Language</p>
+  <p class="intro">
+    Sign language is one of the world's most expressive and beautiful forms of communication. 
+    FingerConnect helps beginners take their first step — learning the ASL (American Sign Language) 
+    manual alphabet. Hover over each letter to reveal it, and practice at your own pace.
+  </p>
+  <div class="divider"></div>
+</header>
+
+<!-- ALPHABET SECTION -->
+<main class="section" aria-label="ASL Alphabet Guide">
+  <p class="section-label">The Manual Alphabet</p>
+  <h2 class="section-title">A–Z in American Sign Language</h2>
+
+  <div class="grid" id="alphabet-grid" role="list">
+    <!-- Cards injected by JS -->
+  </div>
+
+  <div class="tip-strip" role="note">
+    <div class="tip-icon">💡</div>
+    <div class="tip-text">
+      <strong>Practice Tip</strong>
+      <p>Start with just 5 letters a day. Mirror yourself in a camera, focus on clear hand shape, 
+      and practice spelling your own name first — it's the best motivator!</p>
+    </div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer>
+  Made with <span>♥</span> for learners everywhere · FingerConnect · ASL Alphabet Reference
+</footer>
+
+<script>
+// ── SVG hand shapes for each letter of the ASL alphabet ──
+// Illustrated as clean line-art SVGs
+const HANDS = {
+  A: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="28" y="45" width="44" height="60" rx="10" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M38 45 Q38 30 44 28 Q50 26 50 38 L50 45" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <circle cx="38" cy="75" r="5" fill="#c8956a" opacity="0.4"/>
+    <path d="M60 88 Q65 85 64 80" stroke="#8b5a2b" stroke-width="2" stroke-linecap="round"/>
+  </svg>`,
+
+  B: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="30" y="50" width="12" height="55" rx="6" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <rect x="44" y="45" width="10" height="60" rx="5" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <rect x="56" y="47" width="10" height="58" rx="5" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <rect x="67" y="52" width="9" height="50" rx="4.5" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M22 75 Q25 65 30 65" stroke="#8b5a2b" stroke-width="2.5" stroke-linecap="round"/>
+    <ellipse cx="25" cy="80" rx="6" ry="9" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+  </svg>`,
+
+  C: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M75 52 Q55 35 30 55 Q18 68 22 90 Q26 108 50 112 Q70 114 80 98" 
+      fill="none" stroke="#8b5a2b" stroke-width="12" stroke-linecap="round"/>
+    <path d="M75 52 Q55 38 32 56 Q20 69 24 90 Q28 106 50 110 Q68 112 78 98" 
+      fill="#d4a574" stroke="none"/>
+  </svg>`,
+
+  D: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="40" y="30" width="12" height="65" rx="6" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M42 95 Q30 95 25 105 Q22 112 30 115 L65 115 Q72 110 68 102 L52 95 Z" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M53 70 Q63 72 65 80 Q67 88 53 92" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M53 60 Q66 55 68 65" fill="none" stroke="#8b5a2b" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M53 50 Q65 42 68 52" fill="none" stroke="#8b5a2b" stroke-width="2.5" stroke-linecap="round"/>
+  </svg>`,
+
+  E: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="28" y="68" width="44" height="42" rx="10" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M38 68 Q38 58 42 55 Q46 52 46 60 L46 68" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M48 68 Q48 56 52 53 Q56 50 56 60 L56 68" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M58 68 Q58 58 62 55 Q66 52 66 62 L66 68" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <ellipse cx="32" cy="80" rx="5" ry="8" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+  </svg>`,
+
+  F: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="42" cy="65" r="10" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <rect x="52" y="38" width="11" height="55" rx="5.5" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <rect x="64" y="42" width="10" height="50" rx="5" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M30 65 Q28 80 32 95 L38 108 Q45 118 55 115 L65 108" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M36 60 Q32 48 36 40 Q40 32 46 35 Q50 38 48 48 L44 55" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+  </svg>`,
+
+  G: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="20" y="55" width="55" height="14" rx="7" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <rect x="20" y="78" width="40" height="30" rx="10" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M55 55 Q62 45 68 47 Q74 50 70 60 L65 69" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+  </svg>`,
+
+  H: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="18" y="55" width="55" height="13" rx="6.5" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <rect x="18" y="70" width="55" height="13" rx="6.5" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <rect x="18" y="85" width="40" height="28" rx="10" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M62 55 Q70 44 75 48 Q80 53 74 63" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+  </svg>`,
+
+  I: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="30" y="60" width="40" height="48" rx="10" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <rect x="42" y="35" width="12" height="28" rx="6" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M38 60 Q36 50 40 44" fill="none" stroke="#8b5a2b" stroke-width="2" stroke-linecap="round"/>
+    <path d="M58 60 Q60 50 56 44" fill="none" stroke="#8b5a2b" stroke-width="2" stroke-linecap="round"/>
+  </svg>`,
+
+  J: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M60 30 L60 90 Q60 115 38 115 Q22 115 22 100" fill="none" stroke="#8b5a2b" stroke-width="12" stroke-linecap="round"/>
+    <path d="M60 32 L60 88 Q60 112 40 112 Q26 112 26 100" fill="#d4a574" stroke="none"/>
+    <ellipse cx="60" cy="30" rx="10" ry="8" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M70 20 Q82 18 78 30" fill="none" stroke="#8b5a2b" stroke-width="2.5" stroke-linecap="round"/>
+  </svg>`,
+
+  K: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="28" y="40" width="12" height="75" rx="6" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M40 70 L65 42" stroke="#8b5a2b" stroke-width="12" stroke-linecap="round" fill="none"/>
+    <path d="M40 70 L65 42" stroke="#d4a574" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M40 70 L65 100" stroke="#8b5a2b" stroke-width="12" stroke-linecap="round" fill="none"/>
+    <path d="M40 70 L65 100" stroke="#d4a574" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <ellipse cx="48" cy="75" rx="6" ry="5" fill="#c8956a" opacity="0.5"/>
+  </svg>`,
+
+  L: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="30" y="30" width="13" height="65" rx="6.5" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <rect x="30" y="80" width="50" height="13" rx="6.5" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <circle cx="36" cy="50" r="4" fill="#c8956a" opacity="0.4"/>
+  </svg>`,
+
+  M: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="28" y="68" width="44" height="40" rx="10" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M36 68 Q36 55 40 52 Q44 49 44 62 L44 68" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M45 68 Q45 53 49 50 Q53 47 53 61 L53 68" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M54 68 Q54 56 58 53 Q62 50 62 63 L62 68" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <ellipse cx="30" cy="80" rx="5" ry="8" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+  </svg>`,
+
+  N: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="28" y="70" width="44" height="40" rx="10" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M36 70 Q36 57 40 54 Q44 51 44 64 L44 70" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M46 70 Q46 55 50 52 Q54 49 54 63 L54 70" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <ellipse cx="30" cy="80" rx="5" ry="8" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+  </svg>`,
+
+  O: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M50 30 Q72 30 78 55 Q82 72 72 88 Q60 105 42 100 Q24 95 22 75 Q20 55 35 40 Q42 33 50 30 Z"
+      fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M50 48 Q62 48 64 62 Q65 72 58 80 Q50 88 40 83 Q32 78 33 67 Q34 55 42 49 Q46 47 50 48 Z"
+      fill="#f0d5b0" stroke="#8b5a2b" stroke-width="1.5"/>
+  </svg>`,
+
+  P: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="40" y="35" width="13" height="80" rx="6.5" transform="rotate(30 40 35)" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <rect x="28" y="50" width="13" height="65" rx="6.5" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M41 50 Q56 42 62 55 Q66 64 54 70 L41 72" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+  </svg>`,
+
+  Q: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="36" y="35" width="13" height="80" rx="6.5" transform="rotate(-30 36 35)" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <rect x="52" y="50" width="13" height="65" rx="6.5" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M52 50 Q37 42 32 55 Q28 64 40 70 L52 72" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+  </svg>`,
+
+  R: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="40" y="38" width="12" height="70" rx="6" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <rect x="52" y="40" width="11" height="68" rx="5.5" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M41 55 Q50 50 52 55" fill="none" stroke="#8b5a2b" stroke-width="2" stroke-linecap="round"/>
+    <rect x="28" y="75" width="40" height="36" rx="10" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <ellipse cx="35" cy="85" rx="4" ry="6" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+  </svg>`,
+
+  S: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="28" y="50" width="44" height="58" rx="10" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M38 50 Q38 40 43 37 Q48 34 48 44 L48 50" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M49 50 Q49 40 54 37 Q59 34 59 44 L59 50" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M60 50 Q60 40 65 37 Q70 34 70 44 L70 50" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M36 62 Q70 62 70 65" stroke="#8b5a2b" stroke-width="1.5" stroke-linecap="round"/>
+  </svg>`,
+
+  T: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="28" y="55" width="44" height="55" rx="10" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M38 55 Q38 45 43 42 Q48 39 48 49 L48 55" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M50 55 Q50 43 55 40 Q60 37 60 48 L60 55" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M62 55 Q62 45 67 42 Q72 39 72 49 L72 55" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M36 58 Q48 52 50 55" stroke="#8b5a2b" stroke-width="1.5" stroke-linecap="round"/>
+  </svg>`,
+
+  U: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="34" y="38" width="12" height="70" rx="6" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <rect x="48" y="38" width="12" height="70" rx="6" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <rect x="28" y="85" width="44" height="28" rx="10" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M62 60 Q68 50 72 52 Q77 55 72 65" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+  </svg>`,
+
+  V: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="34" y="35" width="12" height="72" rx="6" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <rect x="52" y="35" width="12" height="72" rx="6" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <rect x="28" y="88" width="44" height="28" rx="10" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <ellipse cx="32" cy="98" rx="4" ry="6" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M36 55 Q44 50 52 55" fill="none" stroke="#8b5a2b" stroke-width="2" stroke-linecap="round"/>
+  </svg>`,
+
+  W: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="28" y="38" width="11" height="68" rx="5.5" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <rect x="41" y="35" width="11" height="72" rx="5.5" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <rect x="54" y="38" width="11" height="68" rx="5.5" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <rect x="22" y="90" width="50" height="28" rx="10" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M65 60 Q72 50 76 53 Q80 57 74 66" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+  </svg>`,
+
+  X: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="28" y="68" width="44" height="40" rx="10" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M40 40 Q40 55 44 62 Q48 68 50 68" fill="none" stroke="#8b5a2b" stroke-width="11" stroke-linecap="round"/>
+    <path d="M40 40 Q40 55 44 62 Q48 67 50 68" stroke="#d4a574" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path d="M62 68 Q56 60 54 50 Q52 42 50 38" fill="none" stroke="#8b5a2b" stroke-width="11" stroke-linecap="round"/>
+    <path d="M62 68 Q56 60 54 50 Q52 43 50 38" stroke="#d4a574" stroke-width="7" fill="none" stroke-linecap="round"/>
+  </svg>`,
+
+  Y: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="30" y="60" width="40" height="50" rx="10" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M30 60 Q28 45 24 38 Q20 31 28 30 Q36 29 36 40 L36 60" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+    <path d="M68 60 Q70 45 75 35 Q80 26 72 26 Q64 26 63 40 L63 60" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+  </svg>`,
+
+  Z: `<svg viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M30 40 L70 40 L30 90 L70 90" fill="none" stroke="#8b5a2b" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M30 40 L70 40 L30 90 L70 90" fill="none" stroke="#d4a574" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="28" y="98" width="44" height="22" rx="8" fill="#d4a574" stroke="#8b5a2b" stroke-width="2.5"/>
+  </svg>`,
+};
+
+const grid = document.getElementById('alphabet-grid');
+const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+letters.forEach(letter => {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.setAttribute('role', 'listitem');
+  card.setAttribute('aria-label', `Sign language hand shape for letter ${letter}`);
+  card.setAttribute('tabindex', '0');
+
+  card.innerHTML = `
+    <div class="hand-svg" aria-hidden="true">${HANDS[letter] || HANDS.A}</div>
+    <span class="letter-small" aria-hidden="true">${letter}</span>
+    <div class="letter-reveal" aria-hidden="true">
+      <span class="letter-big">${letter}</span>
+      <span class="letter-name">Letter ${letter}</span>
+    </div>
+  `;
+
+  grid.appendChild(card);
+});
+</script>
+</body>
+</html>
